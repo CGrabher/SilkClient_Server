@@ -1,0 +1,168 @@
+﻿@page "/assets"
+@using SilkClient.api;
+@attribute [StreamRendering]
+@rendermode InteractiveServer
+
+<PageTitle>Assets</PageTitle>
+
+<style>
+    body {
+        background-color: #2B2E4A;
+        color: #E84545;
+        margin: 0;
+        height: 100vh;
+    }
+
+    .container {
+        display: flex;
+        align-items: center; /* Center items vertically */
+        justify-content: center; /* Center items horizontally */
+        height: 100%;
+    }
+
+    h3 {
+        color: #E84545;
+        text-align: center;
+    }
+
+    h1 {
+        color: #E84545;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    label {
+        color: #E84545;
+    }
+
+    p[role="status"] {
+        color: #E84545;
+        font-style: italic;
+        text-align: center;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        margin: 5px 0;
+        box-sizing: border-box;
+        border: 1px solid #903749;
+        border-radius: 5px;
+        background-color: #0F0B0B;
+        color: #ffffff;
+    }
+
+    .table {
+        color: #E84545;
+    }
+
+        .table th {
+            color: #ffffff;
+        }
+
+
+    .custom-btn {
+        width: 100px;
+    }
+
+    .left-btn {
+        float: left;
+        margin-right: 10px;
+        width: 200px;
+    }
+
+</style>
+
+<h1>Assets</h1>
+
+<p>All available assets</p>
+<button class="btn btn-primary custom-btn left-btn" @onclick="NavigateToNewAsset">New Asset</button>
+
+@if (assets == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Path</th>
+                <th>Owner</th>
+                <th>Created</th>
+                <th>Id</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var a in assets)
+            {
+                <tr>
+                    <td>@a.Name</td>
+                    <td>@a.Description</td>
+                    <td>@a.Path</td>
+                    <td>@a.Owner</td>
+                    <td>@a.Created.ToString()</td>
+                    <td>@a.Id</td>
+                    <td>
+                        <button class="btn btn-primary custom-btn" @onclick="() => Edit(a.Id)">Edit</button>
+                        <button class="btn btn-primary custom-btn" @onclick="() => Delete(a.Id)">Delete</button>
+
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+@inject NavigationManager NavManager
+@inject ApiClientFactory ClientFactory
+
+@code {
+    private ICollection<Asset>? assets;
+
+    /// <summary>
+    /// Called right after the page loads
+    /// 1.Call the API to fill the List with all existing Assets
+    /// 2.Store in Assets Field
+    /// </summary>
+    /// <returns></returns>
+    protected override async Task OnInitializedAsync()
+    {
+        assets = await ClientFactory.CreateClient().List_AssetsAsync();
+        //ask page to re-render
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Called when clicked on Edit
+    /// </summary>
+    /// <param name="id">Asset Is</param>
+    private void Edit(string id)
+    {
+        NavManager.NavigateTo("/assets/" + id);
+    }
+
+    /// <summary>
+    /// Called when clicked on Delete
+    /// 1.Remove the Asset via API from the Server
+    /// 2.Reloads the Page
+    /// </summary>
+    /// <param name="id">Asset Id</param>
+    private async void Delete(string id)
+    {
+        await ClientFactory.CreateClient().Delete_AssetAsync(id);
+        // re-fetch all assets
+        await OnInitializedAsync();
+    }
+
+    private void NavigateToNewAsset()
+    {
+        NavManager.NavigateTo("/new-asset");
+    }
+}

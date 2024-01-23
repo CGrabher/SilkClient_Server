@@ -1,0 +1,86 @@
+﻿@page "/new-asset"
+@using SilkClient.api;
+@rendermode InteractiveServer
+
+<PageTitle>New Assets</PageTitle>
+
+<h1>Asset</h1>
+
+<p>Edit an asset</p>
+
+
+@if (asset == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="form-group">
+        <label>Id:</label>
+        <InputText class="form-control" @bind-Value="asset.Id" readonly/>
+    </div>
+    <div class="form-group">
+        <label>Name:</label>
+        <InputText class="form-control" @bind-Value="asset.Name" />
+    </div>
+    <div class="form-group">
+        <label>Description:</label>
+        <InputText class="form-control" @bind-Value="asset.Description" />
+    </div>
+    <div class="form-group">
+        <label>Path:</label>
+        <InputText class="form-control" @bind-Value="asset.Path"/>
+    </div>
+    <div class="form-group">
+        <label>Owner:</label>
+        <InputText class="form-control" @bind-Value="asset.Owner" readonly / />
+    </div>
+    <div class="form-group">
+        <label>Created:</label>
+        <InputText class="form-control" @bind-Value="asset.Created" readonly/>
+    </div>
+
+    <button class="btn btn-primary" @onclick="Save" >Save</button>
+    <p>@Message</p>
+    <a href="/assets" style="color: #E84545;">Back to List</a>
+}
+
+@inject LoginService LoginService
+@inject LoginSession Session
+@inject ApiClientFactory ClientFactory
+
+@code {
+
+    public string Message { get; set; } = "";
+    private Asset asset = new Asset();
+
+    /// <summary>
+    /// Shows a "blank" Asset with only Generated ID and date
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    protected override async Task OnInitializedAsync()
+    {
+        asset.Id = Guid.NewGuid().ToString();
+        asset.Owner = Session.User; 
+        asset.Path = "";
+        asset.Name = "";
+        asset.Description = "";
+        asset.Created = DateTime.Now.ToString();
+
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// When clicked on Save we call the API to save the Asset on the Server
+    /// </summary>
+    private async void Save()
+    {
+        Message = "Saving...";
+        await ClientFactory.CreateClient().Create_AssetAsync(asset);
+        Message = "Asset saved successfully";
+        StateHasChanged();
+
+        await OnInitializedAsync();
+    }
+}

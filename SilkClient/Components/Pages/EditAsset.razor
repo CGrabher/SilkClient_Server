@@ -1,0 +1,138 @@
+﻿@page "/assets/{id}"
+@using Microsoft.AspNetCore.Components.Authorization
+@using SilkClient.api;
+@rendermode InteractiveServer
+
+<style>
+    h1 {
+        color: #E84545;
+        text-align: center;
+        margin-bottom: 15px;
+    }
+
+    .form-group ul {
+        list-style: none;
+        padding: 10px; 
+    }
+</style>
+
+<PageTitle>Edit Assets</PageTitle>
+
+<h1>Asset</h1>
+
+<p>Edit an asset</p>
+
+
+@if (asset == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="form-group">
+        <label>Id:</label>
+        <InputText class="form-control" @bind-Value="asset.Id" readonly/>
+    </div>
+    <div class="form-group">
+        <label>Name:</label>
+        <InputText class="form-control" @bind-Value="asset.Name" />
+    </div>
+    <div class="form-group">
+        <label>Description:</label>
+        <InputText class="form-control" @bind-Value="asset.Description" />
+    </div>
+    <div class="form-group">
+        <label>Path:</label>
+        <InputText class="form-control" @bind-Value="asset.Path" readonly/>
+    </div>
+    <div class="form-group">
+        <label>Owner:</label>
+        <InputText class="form-control" @bind-Value="asset.Owner" readonly/>
+    </div>
+    <div class="form-group">
+        <label>Created:</label>
+        <InputText class="form-control" @bind-Value="asset.Created" readonly/>
+    </div>
+    <div class="form-group">
+        <label>Shared</label>
+        <ul class="form-control">
+            @foreach (var u in users)
+            {
+                var isChecked = shares.Contains(u.Id);
+                <li>
+                    @if (isChecked) {
+                        <input type="checkbox" name="sharedUsers" value="@u.Id" id="@u.Id" checked @onchange=" eventArgs=> { OnCheckboxChanged(u.Id, (bool)eventArgs.Value); }" /> @u.Name
+                    }else{
+                        <input type="checkbox" name="sharedUsers" value="@u.Id" id="@u.Id" @onchange=" eventArgs=> { OnCheckboxChanged(u.Id, (bool)eventArgs.Value); }" /> @u.Name
+                    }
+                </li>
+            }
+        </ul>
+    </div>
+
+    <button class="btn btn-primary" @onclick="Save" >Save</button>
+    <p>@Message</p>
+    <a href="/assets" style="color: #E84545;">Back to List</a>
+}
+
+@inject ApiClientFactory ClientFactory 
+
+@code {
+
+    // This is the parameter we get from the route /assets/{id}
+    [Parameter]
+    public string id { get; set; }
+
+    public string Message { get; set; } = "...";
+    private Asset? asset;
+    private ICollection<User>? users;
+    private ICollection<string>? shares;
+
+    /// <summary>
+    /// called right after the page was loaded. 
+    ///  1. We load the data for the asset indicated by the url-parameter "id" stored in asset
+    ///  2. we load all users to fill the share table
+    ///  3. we load the list of users that this asset is shared to (who is checked)
+    /// </summary>
+    /// <returns></returns>
+    protected override async Task OnInitializedAsync()
+    {
+        // fetch the asset we want to edit
+        asset = await ClientFactory.CreateClient().Get_one_AssetAsync(id);
+        //fetch all users to fill the user table
+        users = await ClientFactory.CreateClient().Get_all_UsersAsync();
+        // fetch the users that this asset is shared for
+        shares = await ClientFactory.CreateClient().Get_Shared_AssetsAsync(asset.Id);
+
+        StateHasChanged();
+    }
+
+    private async void Save()
+    {
+        Message = "Saving...";
+        await ClientFactory.CreateClient().Update_AssetAsync(asset);
+        await ClientFactory.CreateClient().Update_Shared_AssetsAsync(asset.Id, shares);
+        Message = "Asset saved successfully";
+        StateHasChanged();
+
+    }
+
+    /// <summary>
+    /// called whenever we check or uncheck a share-checkbox of a user
+    /// </summary>
+    /// <param name="userId">the id of the user we clicked</param>
+    /// <param name="checkValue">true if we just checked the user, false if we unchecked it</param>
+    void OnCheckboxChanged(string userId, bool checkValue)
+    {
+        if(checkValue)
+        {
+            shares?.Add(userId);
+        }
+        else
+        {
+            shares?.Remove(userId);
+        }
+
+    }
+
+}

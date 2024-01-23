@@ -1,0 +1,109 @@
+﻿@using System.ComponentModel.DataAnnotations;
+@using SilkClient.api;
+@using System.Security.Cryptography;
+@using System.Text;
+
+@rendermode InteractiveServer
+@page "/register"
+
+<h3>New User</h3>
+
+<div Model="@registerModel">
+
+    <div class="form-group">
+        <label>Username:</label>
+        <InputText class="form-control" @bind-Value="registerModel.Username" />
+    </div>
+    <div class="form-group">
+        <label>Email</label>
+        <InputText class="form-control" @bind-Value="registerModel.Email" />
+    </div>
+
+    <div class="form-group">
+        <label>Password:</label>
+        <InputText type="password" class="form-control" @bind-Value="registerModel.Password" />
+    </div>
+    <div class="form-group">
+        <label>Password again:</label>
+        <InputText type="password" class="form-control" @bind-Value="registerModel.Password2" />
+    </div>
+
+</div>
+<button class="btn btn-primary" @onclick="RegisterUser">Register</button>
+<p role="status">@registerModel.Message</p>
+
+
+@inject NavigationManager NavManager
+@inject LoginService LoginService
+@inject ApiClientFactory ClientFactory
+
+@code {
+    private RegisterModel registerModel = new RegisterModel();
+    /// <summary>
+    /// Creates a new user with the given attributes (Username,Password,Email)
+    /// </summary>
+    private async void RegisterUser()
+    {
+        // check if passwords match
+        if (registerModel.Password != registerModel.Password2)
+        {
+            registerModel.Message = "Passwords do not match";
+            registerModel.Password = "";
+            registerModel.Password2 = "";
+            StateHasChanged();
+            return;
+        }
+        //check if mailformat is valid
+        if (!IsValidEmail(registerModel.Email))
+        {
+            registerModel.Message = "Invalid email address";
+            StateHasChanged();
+            return;
+        }
+
+        //creates a new user with the given attributes
+        var registerRequest = new RegisterUserRequest()
+            {
+                Username = registerModel.Username,
+                Email = registerModel.Email,
+                PasswordHash = await LoginService.HashPassword(registerModel.Username, registerModel.Password)
+            };
+
+        try
+        {
+            await ClientFactory.CreateClient().Register_a_UserAsync(registerRequest);
+            NavManager.NavigateTo("/login");
+        }
+        catch (ApiException e)
+        {
+            registerModel.Message = e.Message;
+            StateHasChanged();
+        }
+    }
+
+    private bool IsValidEmail(string email)
+    {
+        try
+        {
+            var mailAddress = new System.Net.Mail.MailAddress(email);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public class RegisterModel
+    {
+        public string Username { get; set; } = "";
+
+        public string Password { get; set; } = "";
+
+        public string Password2 { get; set; } = "";
+
+        public string Email { get; set; } = "";
+
+        public string Message { get; set; } = "";
+    }
+}

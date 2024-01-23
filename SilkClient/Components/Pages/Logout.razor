@@ -1,0 +1,26 @@
+﻿@using System.ComponentModel.DataAnnotations;
+@using SilkClient.api;
+@using System.Security.Cryptography;
+@using System.Text;
+
+@rendermode InteractiveServer
+@page "/logout"
+
+<h3>Logout</h3>
+
+<p role="status">@Message</p>
+
+
+@inject LoginService LoginService
+
+@code {
+
+    private string Message { get; set; } = "Loging out ... ";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoginService.Logout();
+        Message = "You have been logged out";
+        StateHasChanged();
+    }
+}

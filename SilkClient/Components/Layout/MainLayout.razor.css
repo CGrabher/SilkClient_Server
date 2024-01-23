@@ -1,0 +1,133 @@
+.page {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background-color: #2B2E4A;
+    color: #ffffff; /* Specify the desired text color */
+    padding: 20px; /* Add some padding for better spacing */
+
+}
+
+.header {
+    display: flex;
+    justify-content: left; /* Horizontal zentrieren */
+    align-items: center; /* Vertikal zentrieren */
+    height: 110px;
+    background-color: #0F0B0B;
+}
+
+    .header h1 {
+        color: #E84545; /* Textfarbe anpassen, falls gewünscht */
+        font-size:65px;
+        font-weight:bold;
+        margin: 0;
+    }
+    .header a {
+        text-decoration: none;
+        color: inherit; /* Damit die Farbe des Links beibehalten wird */
+    }
+
+main {
+    flex: 1;
+}
+
+.sidebar {
+    /*background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);*/
+    background-image: #2B2E4A;
+}
+
+.top-row {
+    background-color: #2B2E4A;
+    justify-content: flex-end;
+    height: 3.5rem;
+    display: flex;
+    align-items: center;
+}
+
+    .top-row ::deep a, .top-row ::deep .btn-link {
+        white-space: nowrap;
+        margin-left: 1.5rem;
+        text-decoration: none;
+    }
+
+    .top-row ::deep a:hover, .top-row ::deep .btn-link:hover {
+        text-decoration: underline;
+    }
+
+    .top-row ::deep a:first-child {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+
+@media (max-width: 640.98px) {
+    .top-row {
+        flex-direction: column; /* Änderung der Flex-Richtung auf Spalte */
+        align-items: flex-start; /* Ausrichtung an den Anfang */
+    }
+
+        .top-row ::deep a, .top-row ::deep .btn-link {
+            margin-left: 0;
+            margin-bottom: 0.5rem; /* Hinzufügen von Platz nach unten */
+        }
+
+    .sidebar {
+        width: 100%; /* Volle Breite für kleinere Bildschirme */
+    }
+}
+
+
+
+@media (min-width: 641px) {
+    .page {
+        flex-direction: row;
+    }
+
+    .sidebar {
+        width: 250px;
+        height: 100vh;
+        position: sticky;
+        top: 0;
+    }
+
+    .top-row {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    .top-row.auth ::deep a:first-child {
+        flex: 1;
+        text-align: right;
+        width: 0;
+    }
+
+    .top-row, article {
+        padding-left: 2rem !important;
+        padding-right: 1.5rem !important;
+    }
+
+
+}
+
+#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }
+
+
+
